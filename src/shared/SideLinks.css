@@ -1,0 +1,62 @@
+.side-links li{
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    list-style-type: none;
+    margin-left: 0.5rem;
+
+}
+
+.side-links .nav-bar{
+    margin-top: 1rem;
+}
+
+.side-links .ext-bar{
+    margin-top: 5rem;
+}
+
+.side-links li a{
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    border-radius: 0px;
+    padding: 0.3rem 0.4rem;
+    text-decoration: none;
+    color: rgb(230, 230, 230);
+    font-size: 15px;
+    border: 1px solid transparent;
+}
+
+.profile-card{
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    margin-top: 1rem;
+    margin-left: 1rem;
+}
+
+.profile-card span{
+    padding: 1rem;
+    color: rgb(240 249 255);
+}
+
+  .side-links li a:active,
+  .side-links li a.active {
+    background: rgb(42, 50, 66);
+    color: rgb(240 249 255);
+    border-radius: 5px;
+    /* border: 1px solid rgb(202, 202, 202); */
+  }
+
+  .side-links li a:hover{
+    background: rgb(42, 50, 66);
+    border-radius: 5px;
+    color: white;
+    border: 1px solid transparent;
+  }
+
+  .side-links img{
+      width: 50px;
+  }

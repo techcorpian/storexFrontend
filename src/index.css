@@ -1,0 +1,114 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: "DM Sans", sans-serif;
+}
+
+body {
+  margin: 0;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none;
+}
+
+.slide-in-left-enter {
+  transform: translateX(-100%);
+}
+
+.slide-in-left-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: all 200ms;
+}
+
+.slide-in-left-exit {
+  transform: translateX(0%);
+  opacity: 1;
+}
+
+.slide-in-left-exit-active {
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: all 200ms;
+}
+
+.center {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+    /*--------- Create Button ------------*/
+  
+    .btn2 {
+      position: relative;
+      width: 180px;
+      height: 40px;
+      background: rgb(235, 235, 235); 
+      border-radius: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: rgb(124, 124, 124);
+      text-decoration: none;
+      padding-left: 30px;
+      transition: 0.5s;
+      overflow: hidden;
+    }
+    
+    .btn2:hover {
+      padding-left: 0px;
+      padding-right: 25px;
+      color: white;
+      text-decoration: none;
+      background-color: rgb(30 30 30);
+    }
+    
+    .btn2 span {
+      position: absolute;
+      left: 5px;
+      width: 25px;
+      height: 25px;
+      background: rgb(30 30 30);
+      border-radius: 50%;
+      transition: 0.5s ease-in-out;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 1.25em;
+      margin-left: 4px;
+    }
+    
+    .btn2 .icon{
+      padding: 2px;
+    }
+    
+    .btn2:hover span {
+      left: calc(100% - 40px);
+    }
+    
+    .btn2:after {
+      content: "";
+      position: absolute;
+      width: 80px;
+      height: 100%;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(-200px) skewX(30deg);
+      transition: 0.75s ease-in-out;
+    }
+    
+    .btn2:hover:after {
+      transform: translateX(200px) skewX(-30deg);
+    }
