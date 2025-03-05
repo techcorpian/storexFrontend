@@ -1,253 +1,183 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import axios from 'axios';
-import { FcFolder, FcFile } from 'react-icons/fc';
-import { RiFolderAddLine } from "react-icons/ri";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import FolderCard from "../UIElements/FolderCard";
+import FileCard from "../UIElements/FileCard";
+
+//Redux store
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "../redux/store";
+import { fetchFolders, fetchFoldersById, fetchFilesById, fetchBreadcrumbsById, createFolder, createFile, deleteSelectedItems } from "../redux/slices/folderSlice";
+import { fetchProjects } from "../redux/slices/projectSlice";
+
+//Icons
+import { BiSolidAddToQueue } from "react-icons/bi";
 import { AiTwotoneDelete } from "react-icons/ai";
+import { IoFolderOpenSharp } from "react-icons/io5";
+import { HiDocumentText } from "react-icons/hi2";
 
-import AddModal from '../UIElements/Modal';
-import CustomInput from '../UIElements/CustomInput';
-
-export interface Folder {
-  _id?: string;
-  name: string;
-  description: string;
-  master_id: string;
-  createdAt?: string;
-}
-
-export interface File {
-  _id?: string;
-  name: string;
-  description: string;
-  folder_id: string;
-  createdAt?: string;
-}
-
-export interface Breadcrumbs {
-  _id?: string;
-  name: string;
-  description: string;
-  master_id: string;
-  createdAt?: string;
-}
+//UIElements
+import AddModal from "../UIElements/Modal";
+import CustomInput from "../UIElements/CustomInput";
 
 const Folders: React.FC = () => {
-  const [name, setName] = useState('');
-  const [masterId, setMasterId] = useState('');
-  const [folderId, setFolderId] = useState('');
-  const [folderById, setFolderById] = useState<Folder[]>([]);
-  const [fileById, setFileById] = useState<File[]>([]);
-  const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumbs[]>([]);
+  const { id } = useParams<{ id: string }>();
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { allfolders, folders, files, selectedItems } = useSelector((state: RootState) => state.folders);
+  // const { allprojects } = useSelector((state: RootState) => state.projects);
+
+  const [name, setName] = useState("");
   const [dropdown, setDropdown] = useState(false);
   const [isModal, setModal] = useState(false);
   const [modalType, setModalType] = useState<number | null>(null);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const { id } = useParams<{ id: string }>();
 
-  const api = import.meta.env.VITE_API
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchBreadcrumbsById(id));
+      dispatch(fetchFoldersById(id));
+      dispatch(fetchFilesById(id));
+    }
+  }, [id, dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchFolders());
+    dispatch(fetchProjects());
+  }, [dispatch]);
 
   const handleSubmit = async (type: number) => {
-    if (!name) {
-      alert('Please fill in the field.');
-      return;
-    }
+    if (!name) return alert("Please enter a name");
 
     try {
       if (type === 1) {
-        // Create Folder
-        await axios.post(`${api}/api/folder/`, {
-          name,
-          master_id: masterId,
-        });
-      } else if (type === 2) {
-        // Create File
-        await axios.post(`${api}/api/file/`, {
-          name,
-          folder_id: folderId,
-        });
+        await dispatch(createFolder({ name, masterId: id! })).unwrap();
+      } else {
+        await dispatch(createFile({ name, folderId: id! })).unwrap();
       }
 
-      fetchFoldersById();
-      fetchFilesById();
+      dispatch(fetchFoldersById(id!));  // Refetch updated data
+      dispatch(fetchFilesById(id!));
       handleModalClose();
     } catch (error) {
-      console.error('Error creating folder/file:', error);
+      console.error("Error creating folder/file:", error);
     }
   };
 
-  const fetchBreadcrumbsById = async () => {
-    try {
-      const response = await axios.get<{ breadcrumbs: Breadcrumbs[] }>(
-        `${api}/api/folder/getBreadcrumbsById/${id}`
-      );
-      setBreadcrumbs(response.data.breadcrumbs || []);
-    } catch (error) {
-      console.error('Error fetching breadcrumbs:', error);
-    }
-  };
-
-  const fetchFoldersById = async () => {
-    try {
-      const response = await axios.get<{ folder: Folder[] }>(
-        `${api}/api/folder/getFolderById/${id}`
-      );
-      setFolderById(response.data.folder || []);
-    } catch (error) {
-      console.error('Error fetching folders:', error);
-    }
-  };
-
-  const fetchFilesById = async () => {
-    try {
-      const response = await axios.get<{ file: File[] }>(
-        `${api}/api/file/getFileById/${id}`
-      );
-      setFileById(response.data.file || []);
-    } catch (error) {
-      console.error('Error fetching files:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchBreadcrumbsById();
-    fetchFoldersById();
-    fetchFilesById();
-  }, [id]);
-
-  const handleCheckboxChange = (itemId: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
-    );
-  };
-
-  const handleDelete = async () => {
-    try {
-      // Call delete API for selected items
-      await axios.post(`${api}/api/folder/deleteBulk`, { items: selectedItems });
-      // Filter out deleted items from state
-      setFolderById((prev) => prev.filter((item) => !selectedItems.includes(item._id!)));
-      setFileById((prev) => prev.filter((item) => !selectedItems.includes(item._id!)));
-      setSelectedItems([]); // Clear selected items
-    } catch (error) {
-      console.error('Error deleting items:', error);
-    }
-  };
-
-  const handleDropdownOpen = () => {
-    setDropdown(!dropdown);
+  const handleBack = () => {
+    window.history.back();
   };
 
   const handleModalOpen = (type: number) => {
     setDropdown(false);
     setModal(true);
     setModalType(type);
-    if (type === 1) {
-      setMasterId(id || '');
-    } else if (type === 2) {
-      setFolderId(id || '');
-    }
   };
 
   const handleModalClose = () => {
     setModal(false);
     setModalType(null);
-    setMasterId('');
-    setFolderId('');
-    setName('');
+    setName("");
   };
 
-  const isFolder = (data: Folder | File): data is Folder => {
-    return (data as Folder).master_id !== undefined;
-  };
+  const currentFolder = allfolders.find(folder => folder._id === id);
+  // const currentProject = allprojects.find(project => project._id === id);
+
+  //folder variables
+  const folderTitle = "Add Folder"
+  const folderDesc = "Add folders by entering entering it in the input";
+  const folderLabel = "Enter Folder Name"
+
+  //file variables
+  const fileTitle = "Add File"
+  const fileDesc = "Add file by entering entering it in the input";
+  const fileLabel = "Enter File Name"
 
   return (
-    <div className='bg-gray-100'>
+    <div className="bg-gray-100">
       {isModal && (
-        <AddModal onClose={handleModalClose} title={modalType === 1 ? "Add Folder" : "Add File"}>
+        <AddModal onClose={handleModalClose} title={modalType === 1 ? folderTitle : fileTitle} desc={modalType === 1 ? folderDesc : fileDesc}>
           <CustomInput
             type="text"
             id="name"
-            label={modalType === 1 ? "Enter Folder Name" : "Enter File Name"}
+            label={modalType === 1 ? folderLabel : fileLabel}
             value={name}
             setValue={setName}
           />
           <button
             onClick={() => handleSubmit(modalType!)}
-            className='float-right px-4 py-2 border border-green-400 rounded-lg hover:bg-green-500 hover:border-green-400 mt-3 bg-green-400'
+            className="float-right px-4 py-2 border border-neutral-800 hover:bg-neutral-900 hover:border-neutral-900 mt-3 bg-neutral-800 text-white"
           >
             {modalType === 1 ? "Create Folder" : "Create File"}
           </button>
         </AddModal>
       )}
-      <div className='text-xl font-bold text-gray-400 px-6 py-4 z-10 cursor-pointer'>
-        <span className='text-black font-bold'>  {breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].name : ''}</span>
-        Folders ({folderById.length}) & Files ({fileById.length})
+
+      <div className="flex items-center text-2xl font-semibold text-gray-600 bg-gray-100 px-6 py-4">
+        <span className="text-black font-bold pr-3 text-xl">{currentFolder ? currentFolder.name : "Projects"} -</span>
+
+        <div className="flex gap-4 relative">
+          {/* Folder Icon */}
+          <div className="relative flex items-center">
+            <IoFolderOpenSharp className="text-yellow-500 text-3xl" />
+            <span className="absolute -top-1 -right-2 bg-neutral-200 border border-neutral-500 text-neutral-900 text-xs px-1.5 py-0.5 rounded-md">
+              {folders.length}
+            </span>
+          </div>
+
+          {/* Document Icon */}
+          <div className="relative flex items-center">
+            <HiDocumentText className="text-blue-500 text-3xl" />
+            <span className="absolute -top-1 -right-2 bg-neutral-200 border border-neutral-500 text-neutral-900 text-xs px-1.5 py-0.5 rounded-md">
+              {files.length}
+            </span>
+          </div>
+        </div>
       </div>
-      <div className={`flex justify-between items-center border-y border-gray-300 w-full px-6 py-1 ${selectedItems.length === 0 ? "" : "bg-red-500"}`}>
-        {selectedItems.length === 0 ? <button className='text-sm'>Back</button> : <div className='text-sm text-white'>Are You Sure You Want To Delete?</div>}
-        {selectedItems.length === 0 ?
-          <button className='text-2xl' onClick={handleDropdownOpen}>
-            <RiFolderAddLine />
+
+      <div
+        className={`flex justify-between items-center border-y border-gray-300 w-full px-6 py-1 ${selectedItems.length === 0 ? "" : "bg-red-700"
+          }`}
+      >
+        {selectedItems.length === 0 ? (
+          <button onClick={handleBack} className="text-sm">Back</button>
+        ) : (
+          <div className="text-sm text-neutral-200">Are You Sure You Want To Delete?</div>
+        )}
+
+        {selectedItems.length === 0 ? (
+          <button className="text-2xl text-neutral-800 hover:text-neutral-700" onClick={() => setDropdown(!dropdown)}>
+            <BiSolidAddToQueue />
           </button>
-          :
+        ) : (
           <button
-            className="text-2xl text-white rounded-lg"
-            onClick={handleDelete}
+            className="text-2xl text-neutral-200 rounded-lg"
+            onClick={() => dispatch(deleteSelectedItems(selectedItems))}
             disabled={selectedItems.length === 0}
           >
             <AiTwotoneDelete />
-          </button>}
-
-
+          </button>
+        )}
       </div>
+
       {dropdown && (
-        <div className='absolute right-5 top-25 bg-white shadow-lg rounded-md z-30'>
-          <div
-            onClick={() => handleModalOpen(1)}
-            className='hover:bg-gray-200 px-3 py-1 rounded-t-md cursor-pointer'
-          >
+        <div className="absolute right-5 top-25 bg-white shadow-lg rounded-md z-30 text-sm">
+          <div onClick={() => handleModalOpen(1)} className="hover:bg-gray-200 px-3 py-2 rounded-t-md cursor-pointer border-b">
             Add a Folder
           </div>
-          <div
-            onClick={() => handleModalOpen(2)}
-            className='hover:bg-gray-200 px-3 py-1 rounded-b-md cursor-pointer'
-          >
+          <div onClick={() => handleModalOpen(2)} className="hover:bg-gray-200 px-3 py-2 rounded-b-md cursor-pointer">
             Add a File
           </div>
         </div>
       )}
 
-      <div className="flex flex-wrap justify-start items-start gap-6 px-6 py-4">
-        {[...(folderById || []), ...(fileById || [])]
+      <div className="flex flex-wrap justify-start items-start gap-6 px-9 py-4">
+        {[...folders, ...files]
           .sort((a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime())
           .map((data) => (
             <div key={data._id} className="relative">
-              <input
-                type="checkbox"
-                className="absolute top-2 left-2"
-                checked={selectedItems.includes(data._id!)}
-                onChange={() => handleCheckboxChange(data._id!)}
-              />
-              {isFolder(data) ? (
-                <Link
-                  to={`/folder/${data._id}`}
-                  className="flex flex-col justify-between items-center text-sm font-light w-[120px] border rounded-lg shadow-lg hover:shadow-none py-4 px-2"
-                >
-                  <span className="text-6xl text-center">
-                    <FcFolder />
-                  </span>
-                  <div className="w-full break-words text-center">{data.name}</div>
-                </Link>
+              {"master_id" in data ? (
+                <FolderCard data={data} />
               ) : (
-                <div className="flex flex-col h-full justify-between items-center text-sm font-light w-[120px] border rounded-lg py-4 px-2">
-                  <span className="text-6xl text-center">
-                    <FcFile />
-                  </span>
-                  <div className="w-full break-words text-center">{data.name}</div>
-                </div>
+                <FileCard data={data}/>
               )}
             </div>
           ))}

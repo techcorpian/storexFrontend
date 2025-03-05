@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, MouseEvent } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { TopNavlink } from '../datas/MenuData';
 import { FaChevronDown } from "react-icons/fa";
-import { CgMenuGridO } from "react-icons/cg";
+// import { CgMenuGridO } from "react-icons/cg";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
 import { FaBell } from "react-icons/fa";
 import { useDispatch } from 'react-redux';
@@ -41,9 +41,9 @@ const Menu: React.FC = () => {
         navigate('/login');
     };
 
-    const openDrawerHandler = (): void => {
-        setDrawerIsOpen(true);
-    };
+    // const openDrawerHandler = (): void => {
+    //     setDrawerIsOpen(true);
+    // };
 
     const closeDrawerHandler = (): void => {
         setDrawerIsOpen(false);
@@ -87,7 +87,7 @@ const Menu: React.FC = () => {
             </SideDrawer>
 
             <div className="w-[100%] text-black z-10 fixed" ref={menuRef}>
-                <div className="flex justify-between items-center py-3 px-3 md:px-6">
+                <div className="flex justify-between items-center py-2 px-3 md:px- md:pr-6">
                     <div className="flex justify-between items-center w-full">
                         <div className="md:hidden">
                             <button onClick={toggleMenu} className="text-black focus:outline-none">
@@ -95,13 +95,13 @@ const Menu: React.FC = () => {
                             </button>
                         </div>
                         <div className='flex justify-center items-center text-2xl text-gray-400 gap-3 z-20'>
-                            <button
+                            {/* <button
                                 className="main-navigation__menu-btn"
                                 onClick={openDrawerHandler}
                             >
                                 <CgMenuGridO className="hidden md:block icons hover:text-gray-600" />
-                            </button>
-                            <div className='font-extrabold text-gray-300 text-2xl'>Storex<span className='text-gray-700 text-2xl'>Cloud.</span></div>
+                            </button> */}
+                            <div className='font-bold text-gray-300 text-2xl'>Storex<span className='text-gray-700 text-2xl'>Cloud.</span></div>
                         </div>
 
                         <div>

@@ -1,62 +1,93 @@
-import React, { useState, useEffect } from 'react'
-import { BiMemoryCard } from "react-icons/bi";
+import React, { useEffect, useState } from 'react';
+// import { BiMemoryCard } from "react-icons/bi";
 import { RiDashboard3Line } from "react-icons/ri";
-import { IoFolderOutline } from "react-icons/io5";
+// import { IoFolderOutline } from "react-icons/io5";
+import { FaPlus } from "react-icons/fa6";
+import { GoProject } from "react-icons/go";
 
-import axios from 'axios'
-import { Link, useLocation } from 'react-router-dom'
+import AddModal from "../UIElements/Modal";
+import CustomInput from "../UIElements/CustomInput";
 
-export interface Folder {
-    _id?: string;
-    name: string;
-    description: string;
-    master_id: number;
-}
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../redux/store"; // Import from Redux store
+import { fetchProjects, addProject } from "../redux/slices/projectSlice";
+import { Link, useLocation } from 'react-router-dom';
 
 const SideFolders: React.FC = () => {
     const location = useLocation();
-    const [folders, setFolders] = useState<Folder[]>([]);
+    const dispatch = useDispatch<AppDispatch>();
+    const { allprojects, loading } = useSelector((state: RootState) => state.projects);
 
-    const api = import.meta.env.VITE_API
-    const fetchFolders = async () => {
-        const response = await axios.get<Folder[]>(`${api}/api/folder/`);
-        console.log(response);
-        setFolders(response.data);
-    };
+    const [isModal, setModal] = useState(false);
+    const [name, setName] = useState("");
 
     useEffect(() => {
-        fetchFolders();
-    }, []);
+        dispatch(fetchProjects());
+    }, [dispatch]);
+
+    const handleModalOpen = () => setModal(true);
+    const handleModalClose = () => {
+        setModal(false);
+        setName("");
+    };
+
+    const handleSubmit = async () => {
+        if (name.trim()) {
+            await dispatch(addProject(name));
+            handleModalClose();
+        }
+    };
+
+    const projectTitle="Add Projects";
+    const projectDesc="Add projects by entering entering it in the input";
+
     return (
-        <div className='fixed z-0 bg-white w-1/6 h-screen shadow-lg flex flex-col gap-4'>
-            <div>
-                <Link to='/home' className={`mt-16 flex items-center gap-3 px-4 hover:bg-gray-200 py-1 ${location.pathname === `/home` ? "bg-gray-200" : ""
-                    }`}><span className='text-blue-500 text-lg'><RiDashboard3Line /></span>Dashboard</Link>
-            </div>
-            <div>
-                <div className='text-sm text-gray-400 font-bold px-4'>Favorites</div>
-                <Link to='/mydrive' className='flex items-center gap-3 px-4 hover:bg-gray-200 py-1'><span className='text-blue-500 text-lg'><BiMemoryCard /></span>Personal Drive</Link>
-            </div>
-            <div>
-                <div className=' text-sm text-gray-400 font-bold px-4'>Projects</div>
-                {folders.map((data) =>
-                    data.master_id == 0 ? (
+        <>
+            <div className='fixed z-0 bg-white w-1/6 h-screen shadow-lg flex flex-col gap-4 rounded-xl border border-neutral-300 px-2'>
+                <div>
+                    <Link to='/home' className={`mt-16 flex items-center gap-3 font-light text-sm px-4 py-2 rounded-md hover:bg-neutral-200 ${location.pathname === `/home` ? "bg-neutral-200 text-neutral-900 font-light" : ""}`}>
+                        <span className='text-lg'><RiDashboard3Line /></span>Dashboard
+                    </Link>
+                </div>
+
+                <div>
+                    <div className='flex justify-between items-center px-2'>
+                        <div className='text-sm text-neutral-400 font-bold'>Projects</div>
+                        <div className='text-sm text-neutral-500 hover:text-neutral-700 cursor-pointer' onClick={handleModalOpen}><FaPlus/></div>
+                    </div>
+
+                    {loading ? <p>Loading...</p> : allprojects.map((data) => (
                         <Link
                             key={data._id}
                             to={`/folder/${data._id}`}
-                            className={`flex items-center gap-3 hover:bg-gray-200 px-4 py-1 ${location.pathname === `/folder/${data._id}` ? "bg-gray-200" : ""
-                                } font-light`}
+                            className={`flex items-center gap-3 text-sm px-4 py-2 rounded-md hover:bg-neutral-200 ${location.pathname === `/folder/${data._id}` ? "bg-neutral-200 text-neutral-900" : ""} font-light`}
                         >
-                            <span className="text-blue-500 text-lg">
-                                <IoFolderOutline />
-                            </span>
+                            <span className="text-lg"><GoProject /></span>
                             {data.name}
                         </Link>
-                    ) : null
-                )}
+                    ))}
+                </div>
             </div>
-        </div>
-    )
-}
 
-export default SideFolders
+            {isModal && (
+                <AddModal onClose={handleModalClose} title={projectTitle} desc={projectDesc}>
+                    <CustomInput
+                        type="text"
+                        id="name"
+                        label="Enter Project Name"
+                        value={name}
+                        setValue={setName}
+                    />
+                    <button
+                        onClick={handleSubmit}
+                        className="float-right px-4 py-2 border border-neutral-800 hover:bg-neutral-900 hover:border-neutral-900 mt-3 bg-neutral-800 text-white"
+                    >
+                        Create Project
+                    </button>
+                </AddModal>
+            )}
+        </>
+    );
+};
+
+export default SideFolders;

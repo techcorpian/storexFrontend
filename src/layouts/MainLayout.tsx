@@ -10,7 +10,7 @@ const MainLayout: React.FC = () => {
     <div className="h-screen">
       <div className="flex">
         {/* Sidebar Menu */}
-        <div className="h-full lg:flex hidden w-1/5">
+        <div className="h-full lg:flex hidden w-1/5 p-2">
           <Menu />
           <SideFolders/>
         </div>

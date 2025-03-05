@@ -6,6 +6,7 @@ import MainLayout from './layouts/MainLayout';
 import Login from './components/Login';
 import Home from './components/Home';
 import Folders from './components/Folders';
+import ErrorPage from './components/ErrorPage';
 import ProtectedRoute from './shared/ProtectedRoute';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route element={<MainLayout />}>
               <Route path="/home" element={<Home />} />
               <Route path="/folder/:id" element={<Folders />} />
+              <Route path="*" element={<ErrorPage />} />
             </Route>
           </Route>
         </Routes>
